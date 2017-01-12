@@ -1,21 +1,39 @@
 <?php
 /*
 Plugin Name: Base Plugin
-Plugin URI: http://byicc.com/
+Plugin URI: http://nodws.com/
 Description: DO NOT DISABLE! this is not just a plugin!
 Author: Nodws
-Version: 1.6
+Version: 1.7
 */
-?>
-<?php
+
 
 //	Check user in login
 if(!function_exists('wp_get_current_user')) {
     include(ABSPATH . "wp-includes/pluggable.php"); 
 }
 
+//Define theme dir
+define('td', get_bloginfo('template_directory').'/' );
+//Define home dir
+define('hd', esc_url(home_url( '/' )));
+define( 'AUTOSAVE_INTERVAL', 3600 ); 
+define( 'WP_POST_REVISIONS', 9 );
+define( 'WP_MAX_MEMORY_LIMIT', '256M' );
+define('CONCATENATE_SCRIPTS', false);
+//Disable edit theme files in admin
+define( 'DISALLOW_FILE_EDIT', true );
+//Block requests
+define( 'WP_HTTP_BLOCK_EXTERNAL', true );
+//Disable image duplication on edit
+define( 'IMAGE_EDIT_OVERWRITE', true );
+//define( 'WP_AUTO_UPDATE_CORE', false );
+//Hide in production
+define( 'WP_DEBUG', true );
+//ini_set( 'display_errors', 'On' );
+
 function custom_admin_branding_login() {
-	//Delete them stinking revisions
+	//Uncomment to clear revisions
 	//$wpdb->query( "DELETE FROM $wpdb->posts WHERE post_type = 'revision'" );
 ?>
 	<style>
@@ -37,12 +55,20 @@ function custom_admin_branding_login() {
 
 	$('#postexcerpt p').hide();
 	
-	$(window).load(fadeOutResponse );
-	function fadeOutResponse() {
-		window.setTimeout( function() {
-				var $message = $(".notice-success");
-				if( $message.length ) { $message.fadeOut(2000); }
-			}, 3500 );
+	var timer = setInterval(count,1000);
+	var secs=0, mins=0;
+	setTimeout(function(){
+
+		$('.updated.notice.notice-success p a').before('(<i>0.0</i> minutes ago) ');
+	},300);
+	function count()
+	{  secs++;
+	   if (secs==60){
+	      secs = 0;
+	      mins++;
+	               }
+	  $('.updated.notice.notice-success p i').text(mins+'.'+Math.floor(secs/60*100)); 
+	 //you can add hours if infinite minutes bother you
 	}
    
 	});
@@ -62,7 +88,7 @@ add_filter( 'admin_footer_text', 'custom_admin_branding_footer_text' );
 
 function custom_admin_branding_footer_text($default_text)  {
 
-	echo '<span>For help: <a href="http://Byicc.com">Byicc</a></span>';
+	echo '<span></span>';
 }
 //footer end
 
@@ -177,6 +203,8 @@ function dcmd_admin_init() {
 				Array("Text 1","txt1"),
 				Array("Text 2","txt2"),
 				Array("text 3","txt3"),
+				Array("text 4","txt4"),
+				Array("text 5","txt5"),
 				Array("Text block","txb1", 1),
 			);
 		endif;
@@ -216,7 +244,7 @@ function dcmd_admin_page() {
 	<form method="post" action="">
 		<?php settings_fields('newe_options'); 
 	if($_POST)
-	echo '<div class="updated"><p>Actualizado con exito</p></div>';
+	echo '<div class="updated"><p>Actualizado con exito <i></i></p></div>';
 ?>
 	
 		<table class="form-table">
@@ -265,17 +293,17 @@ add_action('admin_menu', 'dcmd_admin_menu');
 
 
 
-function change_post_object_label() {
-        global $wp_post_types;
-        $labels = &$wp_post_types['post']->labels;
-        $labels->name = 'Noticias';
+// function change_post_object_label() {
+//         global $wp_post_types;
+//         $labels = &$wp_post_types['post']->labels;
+//         $labels->name = 'Noticias';
 
-    }
-    if ( !current_user_can('moderate_comments') ){
-    add_action( 'init', 'change_post_object_label' );
-    add_action( 'admin_menu', 'change_post_menu_label' );
+//     }
+//     if ( !current_user_can('moderate_comments') ){
+//     add_action( 'init', 'change_post_object_label' );
+//     add_action( 'admin_menu', 'change_post_menu_label' );
    
-    }
+//     }
     
     
     
@@ -354,9 +382,10 @@ function disable_wp_emojicons() {
 
   // filter to remove TinyMCE emojis
   add_filter( 'tiny_mce_plugins', 'disable_emojicons_tinymce' );
+  add_filter( 'wp_calculate_image_srcset', __return_false );
 }
 add_action( 'init', 'disable_wp_emojicons' );
-
+// Remove useless retina images
 function disable_emojicons_tinymce( $plugins ) {
   if ( is_array( $plugins ) ) {
     return array_diff( $plugins, array( 'wpemoji' ) );
@@ -375,3 +404,24 @@ function __my_login_redirect(){
 }
 add_filter( 'login_redirect', '__my_login_redirect' );
 */
+
+
+function listtype($args){
+	 $type = $args['type'] ? $args['type'] : 'post';
+  	 $po = get_posts('post_type='.$type );
+  	 ?>
+	<div class="list-<?=$type?>">
+  	 <?
+  	 global $post;
+    foreach ( $po as $post ) { setup_postdata( $post );
+    	?> <div class="row">
+    		
+		<div class="col-xs-3"><? the_post_thumbnail('thumbnail' ); ?></div>
+		<div class="col-xs-9"><h3><? the_title( ); ?></h3><? the_excerpt()?></div>
+    	</div>
+    	<?
+    }
+			?>
+	</div> <?
+  }
+  add_shortcode( 'listtype', 'listtype' );
