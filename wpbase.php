@@ -4,14 +4,10 @@ Plugin Name: Base Plugin
 Plugin URI: http://nodws.com/
 Description: DO NOT DISABLE! this is not just a plugin!
 Author: Nodws
-Version: 1.7
+Version: 1.9
 */
 
 
-//	Check user in login
-if(!function_exists('wp_get_current_user')) {
-    include(ABSPATH . "wp-includes/pluggable.php"); 
-}
 
 //Define theme dir
 define('td', get_bloginfo('template_directory').'/' );
@@ -31,6 +27,22 @@ define( 'IMAGE_EDIT_OVERWRITE', true );
 //Hide in production
 define( 'WP_DEBUG', true );
 //ini_set( 'display_errors', 'On' );
+
+add_action('wp_enqueue_scripts', function (){
+
+$css = 'main.css';
+$js = 'main.js';
+
+if(!is_file(__DIR__.'/'.$css))
+    file_put_contents(__DIR__.'/'.$css, '/* CSS for '.hd.'*/');  
+if(!is_file(__DIR__.'/'.$js))
+    file_put_contents(__DIR__.'/'.$js, '/* JS for '.hd.'*/');  
+
+    wp_register_script( 'my_plugin_script', plugins_url($js, __FILE__) );
+	wp_enqueue_script( 'my_plugin_script' );	
+	wp_enqueue_style( 'my_plugin_script', plugins_url($css, __FILE__) );
+   
+} );
 
 function custom_admin_branding_login() {
 	//Uncomment to clear revisions
@@ -393,20 +405,9 @@ function disable_emojicons_tinymce( $plugins ) {
     return array();
   }
 }
- //REDIRECTS if we got user registration
-/*
-function __my_registration_redirect(){
-    return home_url( '/dashboard?welcome' );
-}
-add_filter( 'registration_redirect', '__my_registration_redirect' );
-function __my_login_redirect(){
-    return home_url( '/dashboard' );
-}
-add_filter( 'login_redirect', '__my_login_redirect' );
-*/
+ 
 
-
-function listtype($args){
+  add_shortcode( 'list_img', function($args){
 	 $type = $args['type'] ? $args['type'] : 'post';
   	 $po = get_posts('post_type='.$type );
   	 ?>
@@ -419,9 +420,21 @@ function listtype($args){
 		<div class="col-xs-3"><? the_post_thumbnail('thumbnail' ); ?></div>
 		<div class="col-xs-9"><h3><? the_title( ); ?></h3><? the_excerpt()?></div>
     	</div>
-    	<?
-    }
-			?>
+    	<?  }   ?>
 	</div> <?
-  }
-  add_shortcode( 'listtype', 'listtype' );
+  } );
+
+ add_shortcode( 'list_text',  function($a){
+    $type = $a['type'] ? $a['type'] : 'post';
+      $po = get_posts('post_type='.$type );
+      ?>
+   <div class="row list-<?=$type?>">
+      <?
+      global $post;
+   foreach ( $po as $post ) { setup_postdata( $post );
+       ?> 
+       <div class="col"><h3><a href="<?php the_permalink(); ?>"><? the_title( ); ?></a></h3></div>
+    
+       <?   }    ?>
+   </div> <?
+ });
