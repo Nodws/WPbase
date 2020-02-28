@@ -4,7 +4,7 @@ Plugin Name: Base Plugin
 Plugin URI: http://nodws.com/
 Description: DO NOT DISABLE! this is not just a plugin!
 Author: Nodws
-Version: 1.9
+Version: 1.9.1
 */
 
 
@@ -14,33 +14,27 @@ define('td', get_bloginfo('template_directory').'/' );
 //Define home dir
 define('hd', esc_url(home_url( '/' )));
 define( 'AUTOSAVE_INTERVAL', 3600 ); 
-define( 'WP_POST_REVISIONS', 9 );
-define( 'WP_MAX_MEMORY_LIMIT', '256M' );
-define('CONCATENATE_SCRIPTS', false);
+//define('CONCATENATE_SCRIPTS', false);
 //Disable edit theme files in admin
 define( 'DISALLOW_FILE_EDIT', true );
-//Block requests
-define( 'WP_HTTP_BLOCK_EXTERNAL', true );
 //Disable image duplication on edit
 define( 'IMAGE_EDIT_OVERWRITE', true );
-//define( 'WP_AUTO_UPDATE_CORE', false );
-//Hide in production
-define( 'WP_DEBUG', true );
-//ini_set( 'display_errors', 'On' );
-
+define( 'WP_AUTO_UPDATE_CORE', false );
+define( 'pd', dirname( __FILE__ ) . '/' );
+define( 'sname', get_bloginfo( 'name' ));
 add_action('wp_enqueue_scripts', function (){
 
-$css = 'main.css';
-$js = 'main.js';
+$fname = 'main';
+$css = pd.'/'.'main.css';
+$js = pd.'/'.'main.js';
 
-if(!is_file(__DIR__.'/'.$css))
-    file_put_contents(__DIR__.'/'.$css, '/* CSS for '.hd.'*/');  
-if(!is_file(__DIR__.'/'.$js))
-    file_put_contents(__DIR__.'/'.$js, '/* JS for '.hd.'*/');  
-
-    wp_register_script( 'my_plugin_script', plugins_url($js, __FILE__) );
-	wp_enqueue_script( 'my_plugin_script' );	
-	wp_enqueue_style( 'my_plugin_script', plugins_url($css, __FILE__) );
+if(!is_file($css))
+    file_put_contents($css, '/* CSS for '.sname.'*/');  
+if(!is_file($js))
+    file_put_contents($js, '/* JS for '.sname.'*/');  
+ 
+	wp_enqueue_script( 'my_plugin_script', plugins_url("$fname.js", __FILE__), array(), false, true );	
+	wp_enqueue_style( 'my_plugin_script', plugins_url("$fname.css", __FILE__));
    
 } );
 
